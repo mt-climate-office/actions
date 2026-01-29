@@ -46,8 +46,8 @@ runs:
           r-base r-pak r-devtools \
           r-sf r-terra r-units r-arrow \
           r-curl r-tidyverse r-digest r-geometa \
-          r-fs r-xml2 r-jsonlite r-tigris r-rmapshaper \
-          r-furrr r-future.mirai \
+          r-fs r-xml2 r-jsonlite r-tigris \
+          r-furrr \
           gdal geos proj \
           pandoc nodejs
         # Show key versions (notably GDAL/GEOS/PROJ/Arrow):
@@ -66,7 +66,7 @@ runs:
       shell: bash -l {0}
       run: |
         set -euxo pipefail
-        Rscript -e 'library(sf); library(terra); library(tidyverse)'
+        Rscript -e 'pak::pak(c("future.mirai", "rmapshaper"); library(sf); library(terra); library(tidyverse)'
 
     # Sanity check—everything comes from the same conda env.
     - name: Verify toolchain

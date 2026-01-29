@@ -40,8 +40,6 @@ runs:
       shell: bash -l {0}
       run: |
         set -euxo pipefail
-        conda config --add channels conda-forge
-        conda config --set channel_priority strict
         mamba install -y \
           r-base r-pak r-devtools \
           r-sf r-terra r-units r-arrow \
@@ -66,6 +64,9 @@ runs:
       shell: bash -l {0}
       run: |
         set -euxo pipefail
+        # Sanity check: show platform + pak location
+        uname -m
+        Rscript -e 'print(R.version$arch); cat(find.package("pak"), "\n")'
         Rscript -e 'pak::pak_update(); pak::pak(c("future.mirai", "rmapshaper")); library(sf); library(terra); library(tidyverse)'
 
     # Sanity check—everything comes from the same conda env.

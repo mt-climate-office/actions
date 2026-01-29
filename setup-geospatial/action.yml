@@ -45,9 +45,9 @@ runs:
       uses: r-lib/actions/setup-r-dependencies@v2
       with:
         extra-packages: |
-          any::arrow?source
-          any::sf?source
-          any::terra?source
+          arrow?source
+          sf?source
+          terra?source
           any::curl
           any::tidyverse
           any::digest

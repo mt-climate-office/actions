@@ -40,6 +40,8 @@ runs:
       shell: bash -l {0}
       run: |
         set -euxo pipefail
+        conda config --add channels conda-forge
+        conda config --set channel_priority strict
         mamba install -y \
           r-base r-pak r-devtools \
           r-sf r-terra r-units r-arrow \
@@ -60,7 +62,7 @@ runs:
 
     # Install remaining R packages with pak INSIDE the conda R.
     # Using pak keeps CRAN-only packages easy while leveraging conda system libs.
-    - name: Install R dependencies with pak (inside conda)
+    - name: Test r deps (inside conda)
       shell: bash -l {0}
       run: |
         set -euxo pipefail

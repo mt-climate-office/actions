@@ -43,6 +43,9 @@ runs:
         mamba install -y \
           r-base r-pak r-devtools \
           r-sf r-terra r-units r-arrow \
+          r-curl r-tidyverse r-digest r-geometa \
+          r-fs r-xml2 r-jsonlite r-tigris r-rmapshaper \
+          r-furrr r-future.mirai \
           gdal geos proj \
           pandoc nodejs
         # Show key versions (notably GDAL/GEOS/PROJ/Arrow):
@@ -61,11 +64,7 @@ runs:
       shell: bash -l {0}
       run: |
         set -euxo pipefail
-        Rscript -e 'pak::pak(c(
-          # Geo / heavy deps handled by conda above (sf, terra, arrow, units)
-          "curl","tidyverse","digest","geometa","fs","xml2","jsonlite",
-          "tigris","rmapshaper","furrr","future.mirai"
-        ))'
+        Rscript -e 'library(sf); library(terra); library(tidyverse)'
 
     # Sanity check—everything comes from the same conda env.
     - name: Verify toolchain

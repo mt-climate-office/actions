@@ -14,3 +14,9 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: mt-climate-office/actions/setup-geospatial@v1
+      
+      - name: run
+        shell: bash -l {0}
+        run: |
+          set -euxo pipefail
+          Rscript -e 'library(sf); print(sf::sf_extSoftVersion())'

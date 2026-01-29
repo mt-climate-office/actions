@@ -7,6 +7,10 @@ runs:
     # Keep checkout so the action is self-contained (safe if already checked out).
     - name: Checkout
       uses: actions/checkout@v6
+      with:
+        fetch-depth: 1           # shallow history
+        submodules: false        # make it explicit
+        lfs: false               # unless you really need LFS blobs
 
     # Provision a conda-forge environment with mamba and strict channel priority.
     # This installs Miniforge and auto-activates the env in subsequent shells.
@@ -65,7 +69,6 @@ runs:
       run: |
         set -euxo pipefail
         Rscript -e 'install.packages(c("future.mirai", "rmapshaper"), repos = c("https://cloud.r-project.org"))'
-        Rscript -e 'library(sf); library(terra); library(tidyverse)'
 
     # Sanity check—everything comes from the same conda env.
     - name: Verify toolchain

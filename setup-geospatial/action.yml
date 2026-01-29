@@ -64,9 +64,7 @@ runs:
       shell: bash -l {0}
       run: |
         set -euxo pipefail
-        Rscript -e 'install.packages("pak", repos = c("https://r-lib.r-universe.dev", "https://cloud.r-project.org"))'
-        Rscript -e 'pak::pak_update()'
-        Rscript -e 'pak::pak(c("future.mirai", "rmapshaper"))'
+        Rscript -e 'install.packages(c("future.mirai", "rmapshaper"))'
         Rscript -e 'library(sf); library(terra); library(tidyverse)'
 
     # Sanity check—everything comes from the same conda env.

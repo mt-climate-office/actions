@@ -66,7 +66,7 @@ runs:
       shell: bash -l {0}
       run: |
         set -euxo pipefail
-        Rscript -e 'pak::pak(c("future.mirai", "rmapshaper")); library(sf); library(terra); library(tidyverse)'
+        Rscript -e 'pak::pak_update(); pak::pak(c("future.mirai", "rmapshaper")); library(sf); library(terra); library(tidyverse)'
 
     # Sanity check—everything comes from the same conda env.
     - name: Verify toolchain

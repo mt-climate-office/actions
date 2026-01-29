@@ -8,6 +8,11 @@ run-name: Test the setup-geospatial action
 
 permissions: write-all
 
+
+defaults:
+  run:
+    shell: bash -l {0}
+
 jobs:
   setup-geospatial:
     name: setup-geospatial

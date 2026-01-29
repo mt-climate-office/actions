@@ -3,8 +3,8 @@
 on:
   workflow_dispatch:
 
-name: update
-run-name: Update the USDM Archive with the latest data! 🚀
+name: setup-geospatial
+run-name: Test the setup-geospatial action
 
 permissions: write-all
 

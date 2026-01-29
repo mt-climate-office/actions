@@ -1,72 +1,81 @@
-name: "macOS Geo + R (pak) Setup"
-description: "Set up R (setup-r@v2), Pandoc, macOS system deps (Homebrew), and install R packages with pak (setup-r-dependencies@v2)."
+name: "macOS Geo + R (conda-forge) Setup"
+description: "Set up R (conda-forge), Pandoc, GDAL/Arrow/PROJ/GEOS, Node.js, and R deps via pak—all inside a single conda env."
 author: "Montana Climate Office"
 runs:
   using: "composite"
   steps:
-    # Include checkout so the action is self-contained; safe if already checked out.
+    # Keep checkout so the action is self-contained (safe if already checked out).
     - name: Checkout
       uses: actions/checkout@v6
 
-    # Install R (do NOT use Homebrew's R cask).
-    - name: Set up R
-      uses: r-lib/actions/setup-r@v2
+    # Provision a conda-forge environment with mamba and strict channel priority.
+    # This installs Miniforge and auto-activates the env in subsequent shells.
+    # (setup-miniconda supports Miniforge/Mambaforge, channel pinning, caching, etc.)
+    # Docs: https://github.com/conda-incubator/setup-miniconda
+    - name: Set up conda (Miniforge) with mamba
+      uses: conda-incubator/setup-miniconda@v3
       with:
-        r-version: release
+        miniforge-version: latest
+        channels: conda-forge
+        channel-priority: strict
+        use-mamba: true
+        activate-environment: r-geo
+        auto-update-conda: false
 
-    # Pandoc for rmarkdown/quarto pipelines.
-    - name: Set up Pandoc
-      uses: r-lib/actions/setup-pandoc@v2
+    # (Optional) Cache the conda package tarballs to speed up subsequent runs.
+    - name: Cache conda pkgs
+      uses: actions/cache@v4
+      with:
+        path: ~/conda_pkgs_dir
+        key: ${{ runner.os }}-conda-pkgs-${{ hashFiles('**/environment.yml') }}
+        restore-keys: |
+          ${{ runner.os }}-conda-pkgs-
 
-    # macOS system dependencies you listed; no R cask here.
-    - name: Install Homebrew formulae
-      shell: bash
+    # Install core toolchain in the activated conda env:
+    # - R + heavy geo stack (r-sf, r-terra) -> pulls GDAL/GEOS/PROJ from conda-forge
+    # - r-arrow (includes Arrow C++ bindings)
+    # - pandoc
+    # - nodejs (brings npm)
+    - name: Install R + geo stack + Arrow + tools (conda-forge)
+      shell: bash -l {0}
       run: |
         set -euxo pipefail
-        brew update
-        brew upgrade
-        brew cleanup --prune=all --scrub || true
-        rm -rf "$(brew --cache)" || true
-        brew install apache-arrow udunits gdal node
-        brew cleanup --prune=all --scrub || true
-        rm -rf "$(brew --cache)" || true
+        mamba install -y \
+          r-base r-pak r-devtools \
+          r-sf r-terra r-units r-arrow \
+          gdal geos proj \
+          pandoc nodejs
+        # Show key versions (notably GDAL/GEOS/PROJ/Arrow):
+        mamba list | egrep '^(r-base|r-sf|r-terra|r-arrow|gdal|geos|proj|pandoc|nodejs)\s' || true
 
-    # Global CLI tool
-    - name: Install mapshaper (npm -g)
-      shell: bash
+    # Global CLI (npm) installed into the conda-provided Node.js.
+    - name: Install mapshaper (npm -g in conda env)
+      shell: bash -l {0}
       run: |
         set -euxo pipefail
         npm install -g mapshaper
 
-    # Install R packages with pak + caching.
-    # We use 'extra-packages' to ensure these are installed even if the repo
-    # is not a formal R package with a DESCRIPTION file.
-    - name: Install R dependencies (pak + cache)
-      uses: r-lib/actions/setup-r-dependencies@v2
-      with:
-        extra-packages: |
-          arrow?source
-          sf?source
-          terra?source
-          any::curl
-          any::tidyverse
-          any::digest
-          any::geometa
-          any::fs
-          any::xml2
-          any::jsonlite
-          any::tigris
-          any::rmapshaper
-          any::furrr
-          any::future.mirai
+    # Install remaining R packages with pak INSIDE the conda R.
+    # Using pak keeps CRAN-only packages easy while leveraging conda system libs.
+    - name: Install R dependencies with pak (inside conda)
+      shell: bash -l {0}
+      run: |
+        set -euxo pipefail
+        Rscript -e 'pak::pak(c(
+          # Geo / heavy deps handled by conda above (sf, terra, arrow, units)
+          "curl","tidyverse","digest","geometa","fs","xml2","jsonlite",
+          "tigris","rmapshaper","furrr","future.mirai"
+        ))'
 
-    # Optional: quick sanity check
+    # Sanity check—everything comes from the same conda env.
     - name: Verify toolchain
-      shell: bash
+      shell: bash -l {0}
       run: |
         set -euxo pipefail
         R --version | head -n 1 || true
+        Rscript -e 'library(sf); print(sf::sf_extSoftVersion())'
         pandoc --version | head -n 2 || true
         gdalinfo --version || true
         node --version
-        mapshaper -v
+        npm --version
+        mapshaper -v || true

@@ -50,7 +50,7 @@ runs:
           r-sf r-terra r-units r-arrow \
           r-curl r-tidyverse r-digest r-geometa \
           r-fs r-xml2 r-jsonlite r-tigris \
-          r-furrr r-archive
+          r-furrr
         # Show key versions (notably GDAL/GEOS/PROJ/Arrow):
         mamba list | egrep '^(r-base|r-sf|r-terra|r-arrow|gdal|geos|proj|pandoc|nodejs)\s' || true
 
@@ -67,7 +67,7 @@ runs:
       shell: bash -l {0}
       run: |
         set -euxo pipefail
-        Rscript -e 'install.packages(c("future.mirai", "rmapshaper"), repos = c("https://cloud.r-project.org"))'
+        Rscript -e 'install.packages(c("future.mirai", "rmapshaper", "archive"), repos = c("https://cloud.r-project.org"))'
 
     # Sanity check—everything comes from the same conda env.
     - name: Verify toolchain
